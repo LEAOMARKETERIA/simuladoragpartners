@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    :root {
+      --primary-color: #00C6EE;
+      --primary-hover: #0079B0;
+      --text-color: #003b5c;
+      --border-color: #ccd6dd;
+      --bg-light: #f9f9f9;
+      --bg-result: #f1f8f9;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100%;
+    }
+    
+    .calc-wrapper {
+      width: 100%;
+      padding: 10px;
+    }
+    
+    .calc-form {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      border: none;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .calc-form label {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-color);
+    }
+    
+    .calc-form input,
+    .calc-form select {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--bg-light);
+      transition: all 0.2s ease;
+    }
+    
+    .calc-form input:focus,
+    .calc-form select:focus {
+      outline: none;
+      border-color: #00a2b2;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(0, 162, 178, 0.1);
+    }
+    
+    .calc-form button {
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 6px;
+    }
+    
+    .calc-form button:hover {
+      background: var(--primary-hover);
+    }
+    
+    .resultados {
+      display: none;
+      margin-top: 16px;
+      padding: 1rem;
+      background: var(--bg-result);
+      border-left: 4px solid #00a2b2;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-color);
+    }
+    
+    .resultados.mostrar {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .valor {
+      font-size: 22px;
+      color: var(--text-color);
+      margin-top: 4px;
+      font-weight: 700;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsividade */
+    @media (max-width: 576px) {
+      .calc-form {
+        padding: 1.2rem;
+        gap: 12px;
+      }
+      
+      .calc-form input,
+      .calc-form select,
+      .calc-form button {
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      .valor {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calc-wrapper">
+    <form id="calc-form" class="calc-form" onsubmit="event.preventDefault();">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="valor">Total da Operação (R$)</label>
+        <input type="text" id="valor" placeholder="R$ 0,00">
+      </div>
+      
+      <div class="form-group">
+        <label for="prazo">Prazo (dias)</label>
+        <input type="number" id="prazo" placeholder="Ex: 30">
+      </div>
+      
+      <div class="form-group">
+        <label for="taxa">Taxa (% a.m.)</label>
+        <input type="text" id="taxa" placeholder="Ex: 3,50">
+      </div>
+      
+      <div class="form-group">
+        <label for="parceria">Nível de Parceria</label>
+        <select id="parceria">
+          <option value="0">Selecione</option>
+          <option value="0.2">Ouro (20%)</option>
+          <option value="0.15">Prata (15%)</option>
+          <option value="0.1">Bronze (10%)</option>
+        </select>
+      </div>
+      
+      <button type="button" id="btn-simulacao">Fazer Simulação</button>
+      
+      <div class="resultados" id="resultado-box">
+        <p>Comissão: <span id="comissao" class="valor">R$ 0,00</span></p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      function formatBRL(valor) {
+        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      }
+      
+      function formatarMoedaEmTempoReal(input) {
+        let raw = input.value.replace(/\D/g, '');
+        if (!raw) { input.value = ''; return; }
+        let intValue = parseInt(raw, 10);
+        if (isNaN(intValue)) { input.value = ''; return; }
+        let valorFormatado = (intValue / 100).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        input.value = `R$ ${valorFormatado}`;
+      }
+      
+      function formatarTaxaEmTempoReal(input) {
+        let raw = input.value.replace(/\D/g, '');
+        if (!raw) { input.value = ''; return; }
+        let intValue = parseInt(raw, 10);
+        if (isNaN(intValue)) { input.value = ''; return; }
+        let valorFormatado = (intValue / 100).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        input.value = valorFormatado;
+      }
+      
+      function parseBRL(str) {
+        if (!str) return 0;
+        const cleaned = str.replace(/[^0-9,]/g, '').replace(',', '.');
+        return parseFloat(cleaned) || 0;
+      }
+      
+      // Configuração dos inputs
+      const valorInput = document.getElementById("valor");
+      const taxaInput = document.getElementById("taxa");
+
+      valorInput.addEventListener("input", () => formatarMoedaEmTempoReal(valorInput));
+      taxaInput.addEventListener("input", () => formatarTaxaEmTempoReal(taxaInput));
+
+      // Função para atualizar a altura do iframe
+      function updateFrameHeight() {
+        if (window.parent !== window) {
+          const height = document.documentElement.scrollHeight;
+          window.parent.postMessage({ height }, "*");
+        }
+      }
+
+      // Atualiza altura em vários pontos
+      window.addEventListener("load", updateFrameHeight);
+      window.addEventListener("resize", updateFrameHeight);
+
+      document.getElementById("btn-simulacao").addEventListener("click", function () {
+        const email = document.getElementById("email").value;
+        const valor = parseBRL(valorInput.value);
+        const prazo = parseFloat(document.getElementById("prazo").value) || 0;
+        const taxa = parseBRL(taxaInput.value) / 100;
+        const nivel = parseFloat(document.getElementById("parceria").value) || 0;
+        const resultadoBox = document.getElementById("resultado-box");
+
+        if (!email || !valor || !prazo || !taxa || !nivel) {
+          resultadoBox.classList.remove("mostrar");
+          updateFrameHeight();
+          return;
+        }
+
+        const desagio = valor * (prazo / 30) * taxa;
+        const comissao = desagio * nivel;
+
+        document.getElementById("comissao").textContent = formatBRL(comissao);
+        resultadoBox.classList.add("mostrar");
+        
+        // Atualiza a altura depois de mostrar o resultado
+        setTimeout(updateFrameHeight, 100);
+
+        fetch("https://hook.us1.make.com/mqae7omxgmno4jto0vlzuunaekqrsxji", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            valor: formatBRL(valor),
+            prazo,
+            taxa: (taxa * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "% a.m.",
+            comissao: formatBRL(comissao)
+          })
+        }).then(() => {
+          console.log("Webhook enviado.");
+        }).catch(err => {
+          console.error("Erro no webhook:", err);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
