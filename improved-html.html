@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador</title>
+  <title>Simulador de Comissão</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     
@@ -112,6 +112,9 @@
       font-weight: 600;
       font-size: 15px;
       color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px; /* NOVO: Espaçamento entre os resultados */
     }
     
     .resultados.mostrar {
@@ -175,19 +178,25 @@
       </div>
       
       <div class="form-group">
+        <label for="num-clientes">Nº de clientes na carteira</label>
+        <input type="number" id="num-clientes" placeholder="Ex: 5">
+      </div>
+      
+      <div class="form-group">
         <label for="parceria">Nível de Parceria</label>
         <select id="parceria">
           <option value="0">Selecione</option>
-          <option value="0.2">Ouro (20%)</option>
-          <option value="0.15">Prata (15%)</option>
-          <option value="0.1">Bronze (10%)</option>
+          <option value="0.2">Premium (20%)</option>
+          <option value="0.15">Plus (15%)</option>
+          <option value="0.1">Partner (10%)</option>
         </select>
       </div>
       
       <button type="button" id="btn-simulacao">Fazer Simulação</button>
       
       <div class="resultados" id="resultado-box">
-        <p>Comissão: <span id="comissao" class="valor">R$ 0,00</span></p>
+        <p>Sua comissão recorrente será: <span id="comissao" class="valor">R$ 0,00</span></p>
+        <p>Seu bônus de ativação será: <span id="bonus" class="valor">R$ 0,00</span></p>
       </div>
     </form>
   </div>
@@ -253,32 +262,44 @@
         const prazo = parseFloat(document.getElementById("prazo").value) || 0;
         const taxa = parseBRL(taxaInput.value) / 100;
         const nivel = parseFloat(document.getElementById("parceria").value) || 0;
+        const numClientes = parseInt(document.getElementById("num-clientes").value) || 0; // NOVO: Captura o número de clientes
         const resultadoBox = document.getElementById("resultado-box");
 
-        if (!email || !valor || !prazo || !taxa || !nivel) {
+        // ALTERADO: Adicionado numClientes à validação
+        if (!email || !valor || !prazo || !taxa || !nivel || !numClientes) {
           resultadoBox.classList.remove("mostrar");
           updateFrameHeight();
           return;
         }
 
-        const desagio = valor * (prazo / 30) * taxa;
+        // ALTERADO: Cálculo de deságio com juros compostos
+        const desagio = valor * (Math.pow(1 + taxa, prazo / 30) - 1);
         const comissao = desagio * nivel;
+        
+        // NOVO: Cálculo do bônus
+        const bonusAtivacao = numClientes * 1500;
 
+        // ALTERADO: Exibição dos dois resultados
         document.getElementById("comissao").textContent = formatBRL(comissao);
+        document.getElementById("bonus").textContent = formatBRL(bonusAtivacao); // NOVO
+        
         resultadoBox.classList.add("mostrar");
         
         // Atualiza a altura depois de mostrar o resultado
         setTimeout(updateFrameHeight, 100);
 
+        // ALTERADO: Webhook com os novos campos
         fetch("https://hook.us1.make.com/mqae7omxgmno4jto0vlzuunaekqrsxji", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
-            valor: formatBRL(valor),
-            prazo,
-            taxa: (taxa * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "% a.m.",
-            comissao: formatBRL(comissao)
+            valor_operacao: formatBRL(valor),
+            prazo_dias: prazo,
+            taxa_am: (taxa * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "% a.m.",
+            comissao_recorrente: formatBRL(comissao),
+            num_clientes: numClientes, // NOVO
+            bonus_ativacao: formatBRL(bonusAtivacao) // NOVO
           })
         }).then(() => {
           console.log("Webhook enviado.");
