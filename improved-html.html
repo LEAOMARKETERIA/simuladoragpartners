@@ -75,6 +75,7 @@
         align-items: center;
     }
 
+    /* AJUSTE DE ALINHAMENTO */
     .input-icon {
         position: absolute;
         left: 14px;
@@ -82,6 +83,8 @@
         transform: translateY(-50%);
         color: var(--text-light);
         pointer-events: none;
+        display: flex; /* Garante o alinhamento do SVG */
+        align-items: center; /* Garante o alinhamento do SVG */
     }
 
     .validation-icon {
@@ -95,10 +98,12 @@
 
     .form-group.valid .validation-icon.success-icon { opacity: 1; }
     
+    /* AJUSTE DE ALINHAMENTO */
     .calc-form input,
     .calc-form select {
       width: 100%;
-      padding: 12px 14px 12px 42px; /* Espaço para o ícone */
+      height: 48px; /* Altura fixa para consistência */
+      padding: 0 14px 0 42px; /* Padding ajustado para altura fixa */
       font-size: 15px;
       font-family: 'Inter', sans-serif;
       border: 1px solid var(--border-color);
@@ -107,9 +112,10 @@
       transition: all 0.2s ease;
       color: var(--text-color);
     }
-    /* Estilo do Select não tem padding-left */
+    
+    /* AJUSTE DE ALINHAMENTO */
     .calc-form select {
-        padding-left: 14px;
+        padding-left: 14px; /* Padding original para o select sem ícone */
     }
     
     .calc-form input:focus,
@@ -138,6 +144,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      height: 48px;
       padding: 14px;
       font-size: 16px;
       font-weight: 600;
@@ -397,7 +404,7 @@
 
         allInputs.forEach(input => {
             input.addEventListener('blur', () => validateField(input));
-            input.addEventListener('input', () => { // Valida enquanto digita
+            input.addEventListener('input', () => {
                 if (input.closest('.form-group').classList.contains('invalid')) {
                     validateField(input);
                 }
@@ -429,7 +436,6 @@
         // --- FUNÇÕES DE CÁLCULO E LÓGICA PRINCIPAL ---
         const performCalculation = () => {
             if (!validateForm()) {
-                // Rola para o primeiro campo inválido para melhor UX em mobile
                 const firstInvalid = form.querySelector('.form-group.invalid');
                 if(firstInvalid) {
                     firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -446,7 +452,6 @@
             const nivel = parseFloat(document.getElementById('parceria').value);
             const numClientes = parseInt(document.getElementById('num-clientes').value);
 
-            // Cálculo com juros compostos
             const desagio = valor * (Math.pow(1 + taxa, prazo / 30) - 1);
             const comissao = desagio * nivel;
             const bonusAtivacao = numClientes * 1500;
@@ -464,7 +469,6 @@
 
             sendToWebhook({ email, valor, prazo, taxa, comissao, numClientes, bonusAtivacao });
             
-            // Define o estado de sucesso APÓS o cálculo e envio do webhook
             setButtonState('success');
         };
         
