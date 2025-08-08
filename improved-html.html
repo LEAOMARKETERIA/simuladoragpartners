@@ -29,9 +29,10 @@
     
     body {
       margin: 0;
-      padding: 20px;
+      padding: 20px; /* Mantém um respiro nas bordas do iframe */
       font-family: 'Inter', sans-serif;
-      background: var(--bg-light);
+      /* ALTERADO: Fundo do body transparente */
+      background: transparent;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -47,11 +48,11 @@
     
     .calc-form {
       width: 100%;
-      padding: 2rem;
-      border: 1px solid #eef2f5;
-      border-radius: 16px;
-      background: #ffffff;
-      box-shadow: var(--shadow);
+      /* ALTERADO: Removida borda, sombra e fundo */
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      padding: 0; /* Removido padding extra */
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -97,26 +98,22 @@
 
     .form-group.valid .validation-icon.success-icon { opacity: 1; }
     
-    /* ===== CORREÇÃO DEFINITIVA DE ALINHAMENTO ===== */
     .calc-form input,
     .calc-form select {
       width: 100%;
-      /* Removida a altura fixa para permitir que o padding controle a altura */
-      padding: 13px 40px 13px 42px; /* Padding vertical simétrico para centralizar o texto */
+      padding: 13px 40px 13px 42px;
       font-size: 15px;
       font-family: 'Inter', sans-serif;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      background-color: #fff;
+      background-color: #fff; /* Mantido para legibilidade dos campos */
       transition: all 0.2s ease;
       color: var(--text-color);
     }
     
     .calc-form select {
-        /* Padding ajustado para o select (sem ícone à esquerda, mas com ícone de validação à direita) */
         padding: 13px 40px 13px 14px; 
     }
-    /* ============================================== */
     
     .calc-form input:focus,
     .calc-form select:focus {
