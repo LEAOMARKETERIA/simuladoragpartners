@@ -75,7 +75,6 @@
         align-items: center;
     }
 
-    /* AJUSTE DE ALINHAMENTO */
     .input-icon {
         position: absolute;
         left: 14px;
@@ -83,8 +82,8 @@
         transform: translateY(-50%);
         color: var(--text-light);
         pointer-events: none;
-        display: flex; /* Garante o alinhamento do SVG */
-        align-items: center; /* Garante o alinhamento do SVG */
+        display: flex;
+        align-items: center;
     }
 
     .validation-icon {
@@ -98,12 +97,12 @@
 
     .form-group.valid .validation-icon.success-icon { opacity: 1; }
     
-    /* AJUSTE DE ALINHAMENTO */
+    /* ===== CORREÇÃO DEFINITIVA DE ALINHAMENTO ===== */
     .calc-form input,
     .calc-form select {
       width: 100%;
-      height: 48px; /* Altura fixa para consistência */
-      padding: 0 14px 0 42px; /* Padding ajustado para altura fixa */
+      /* Removida a altura fixa para permitir que o padding controle a altura */
+      padding: 13px 40px 13px 42px; /* Padding vertical simétrico para centralizar o texto */
       font-size: 15px;
       font-family: 'Inter', sans-serif;
       border: 1px solid var(--border-color);
@@ -113,10 +112,11 @@
       color: var(--text-color);
     }
     
-    /* AJUSTE DE ALINHAMENTO */
     .calc-form select {
-        padding-left: 14px; /* Padding original para o select sem ícone */
+        /* Padding ajustado para o select (sem ícone à esquerda, mas com ícone de validação à direita) */
+        padding: 13px 40px 13px 14px; 
     }
+    /* ============================================== */
     
     .calc-form input:focus,
     .calc-form select:focus {
