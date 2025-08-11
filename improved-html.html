@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Comissão Otimizado</title>
+
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-WQS4NGF');</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
@@ -93,8 +99,7 @@
 
     .form-group.valid .validation-icon.success-icon { opacity: 1; }
     
-    .calc-form input,
-    .calc-form select {
+    .calc-form input {
       width: 100%;
       padding: 13px 40px 13px 42px;
       font-size: 15px;
@@ -106,12 +111,7 @@
       color: var(--text-color);
     }
     
-    .calc-form select {
-        padding: 13px 40px 13px 14px; 
-    }
-    
-    .calc-form input:focus,
-    .calc-form select:focus {
+    .calc-form input:focus {
       outline: none;
       border-color: var(--primary-color);
       box-shadow: 0 0 0 3px rgba(0, 168, 197, 0.15);
@@ -219,6 +219,8 @@
   </style>
 </head>
 <body>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WQS4NGF"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="calc-wrapper">
     <form id="calc-form" class="calc-form" novalidate>
       
@@ -314,12 +316,11 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('calc-form');
-        const allInputs = form.querySelectorAll('input'); // Alterado para não buscar mais o 'select'
+        const allInputs = form.querySelectorAll('input');
         const btn = document.getElementById('btn-simulacao');
         const btnText = btn.querySelector('.btn-text');
         const spinner = btn.querySelector('.spinner');
 
-        // --- FUNÇÕES DE FORMATAÇÃO ---
         const formatBRL = (value) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         const parseBRL = (str) => {
             if (!str) return 0;
@@ -351,7 +352,6 @@
         applyInputFormatting(document.getElementById('valor'), formatCurrencyInput);
         applyInputFormatting(document.getElementById('taxa'), formatRateInput);
 
-        // --- FUNÇÕES DE VALIDAÇÃO ---
         const validationRules = {
             email: (el) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value),
             valor: (el) => parseBRL(el.value) > 0,
@@ -390,8 +390,6 @@
             });
         });
 
-
-        // --- CONTROLE DO BOTÃO ---
         const setButtonState = (state, text = 'Fazer Simulação') => {
             btn.disabled = (state === 'loading');
             spinner.style.display = (state === 'loading') ? 'block' : 'none';
@@ -412,7 +410,6 @@
             }
         };
 
-        // --- FUNÇÕES DE CÁLCULO E LÓGICA PRINCIPAL ---
         const performCalculation = () => {
             if (!validateForm()) {
                 const firstInvalid = form.querySelector('.form-group.invalid');
@@ -429,8 +426,6 @@
             const prazo = parseFloat(document.getElementById('prazo').value);
             const taxa = parseBRL(document.getElementById('taxa').value) / 100;
             const numClientes = parseInt(document.getElementById('num-clientes').value);
-            
-            // ALTERADO: Nível de parceria fixado em 10% (0.1)
             const nivel = 0.1; 
 
             const desagio = valor * (Math.pow(1 + taxa, prazo / 30) - 1);
@@ -448,6 +443,24 @@
                 updateFrameHeight();
             }, 300);
 
+            // INTEGRAÇÃO COM GOOGLE TAG MANAGER E WEBHOOK
+            const dataLayerPayload = {
+                event: 'simulation_complete',
+                user_email: email,
+                operation_value: valor,
+                operation_term_days: prazo,
+                operation_rate_monthly: taxa,
+                client_count: numClientes,
+                recurring_commission: comissao,
+                activation_bonus: bonusAtivacao
+            };
+
+            // Envia dados para o Google Tag Manager
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push(dataLayerPayload);
+            console.log("DataLayer Push:", dataLayerPayload);
+
+            // Envia dados para o Webhook do Make.com
             sendToWebhook({ email, valor, prazo, taxa, comissao, numClientes, bonusAtivacao });
             
             setButtonState('success');
@@ -455,7 +468,6 @@
         
         btn.addEventListener('click', performCalculation);
         
-        // --- FUNÇÕES AUXILIARES ---
         const updateFrameHeight = () => {
             if (window.parent !== window) {
                 window.parent.postMessage({ height: document.documentElement.scrollHeight }, "*");
